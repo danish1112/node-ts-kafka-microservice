@@ -1,18 +1,21 @@
 import request from 'supertest';
 import app from '../../server';
 import * as userService from '../../service/userService';
+import * as kafkaProducer from '../../kafka/producer';
 import { StatusCodes } from 'http-status-codes';
 
 jest.mock('../../service/userService');
+jest.mock('../../kafka/producer');
 
 describe('User Controller', () => {
   beforeEach(() => {
     jest.clearAllMocks();
   });
 
-  it('should register a user successfully', async () => {
+  it('should register a user successfully and send Kafka event', async () => {
     const mockUser = { id: '1', username: 'testuser', email: 'test@example.com' };
     (userService.registerUser as jest.Mock).mockResolvedValue(mockUser);
+    //(kafkaProducer.sendUserEvent as jest.Mock).mockResolvedValue();
 
     const response = await request(app)
       .post('/api/v1/users/register')
@@ -24,6 +27,11 @@ describe('User Controller', () => {
       username: 'testuser',
       email: 'test@example.com',
       password: 'password123'
+    });
+    expect(kafkaProducer.sendUserEvent).toHaveBeenCalledWith({
+      type: 'user-registered',
+      userId: mockUser.id,
+      username: mockUser.username
     });
   });
 

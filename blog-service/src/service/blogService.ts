@@ -1,10 +1,12 @@
 import { CreateBlogDtoType, UpdateBlogDtoType } from '../api/dtos/blogDto';
 import * as blogRepository from '../repository/blogRepository';
 import * as cache from '../cache/redis';
+import { sendBlogEvent } from '../kafka/producer';
 
 export const createBlog = async (blogData: CreateBlogDtoType) => {
   const blog = await blogRepository.createBlog(blogData);
   await cache.setBlog(blog.id, blog);
+  await sendBlogEvent({ type: 'blog-created', blogId: blog.id, title: blog.title, authorId: blog.authorId });
   return blog;
 };
 
@@ -31,6 +33,7 @@ export const updateBlog = async (id: string, authorId: string, blogData: UpdateB
   }
   const updatedBlog = await blogRepository.updateBlog(id, blogData);
   await cache.setBlog(id, updatedBlog);
+  await sendBlogEvent({ type: 'blog-updated', blogId: id, title: updatedBlog.title, authorId: updatedBlog.authorId });
   return updatedBlog;
 };
 

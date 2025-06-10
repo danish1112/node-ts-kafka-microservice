@@ -1,10 +1,12 @@
 import request from 'supertest';
 import app from '../../server';
 import * as blogService from '../../service/blogService';
+import * as kafkaProducer from '../../kafka/producer';
 import { StatusCodes } from 'http-status-codes';
 import jwt from 'jsonwebtoken';
 
 jest.mock('../../service/blogService');
+jest.mock('../../kafka/producer');
 jest.mock('jsonwebtoken');
 
 describe('Blog Controller', () => {
@@ -18,9 +20,10 @@ describe('Blog Controller', () => {
     });
   });
 
-  it('should create a blog successfully', async () => {
+  it('should create a blog successfully and send Kafka event', async () => {
     const mockBlog = { id: 'blog-uuid', title: 'Test Blog', content: 'Test Content', authorId: mockUser.id };
     (blogService.createBlog as jest.Mock).mockResolvedValue(mockBlog);
+    //(kafkaProducer.sendBlogEvent as jest.Mock).mockResolvedValue();
 
     const response = await request(app)
       .post('/api/v1/blogs')
@@ -33,6 +36,12 @@ describe('Blog Controller', () => {
       title: 'Test Blog',
       content: 'Test Content',
       authorId: mockUser.id
+    });
+    expect(kafkaProducer.sendBlogEvent).toHaveBeenCalledWith({
+      type: 'blog-created',
+      blogId: mockBlog.id,
+      title: mockBlog.title,
+      authorId: mockBlog.authorId
     });
   });
 

@@ -7,6 +7,7 @@ import dotenv from 'dotenv';
 import blogRoutes from './api/routes/blogRoutes';
 import { initDb } from './db/postgres';
 import { initRedis } from './cache/redis';
+import { initKafkaProducer } from './kafka/producer';
 
 dotenv.config();
 
@@ -47,8 +48,8 @@ app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
   res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ error: 'Internal Server Error' });
 });
 
-// Initialize DB and Redis, then start server
-Promise.all([initDb(), initRedis()])
+// Initialize DB, Redis, and Kafka, then start server
+Promise.all([initDb(), initRedis(), initKafkaProducer()])
   .then(() => {
     app.listen(PORT, () => {
       logger.info(`Blog Service running on port ${PORT}`);

@@ -1,6 +1,7 @@
 import { RegisterUserDtoType, LoginUserDtoType } from '../api/dtos/userDto';
 import * as userRepository from '../repository/userRepository';
 import * as cache from '../cache/redis';
+import { sendUserEvent } from '../kafka/producer';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import dotenv from 'dotenv';
@@ -14,6 +15,7 @@ export const registerUser = async (userData: RegisterUserDtoType) => {
     password: hashedPassword
   });
   await cache.setUser(user.id, user);
+  await sendUserEvent({ type: 'user-registered', userId: user.id, username: user.username });
   return { id: user.id, username: user.username, email: user.email };
 };
 
