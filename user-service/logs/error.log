@@ -1,0 +1,1 @@
+{"level":"error","message":"Failed to initialize service: getaddrinfo ENOTFOUND redis","timestamp":"2025-06-09T12:10:51.498Z"}

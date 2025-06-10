@@ -1,0 +1,2 @@
+{"level":"error","message":"Failed to initialize service: getaddrinfo ENOTFOUND redis","timestamp":"2025-06-09T12:10:51.498Z"}
+{"level":"info","message":"User Service running on port 3001","timestamp":"2025-06-09T12:11:08.304Z"}
