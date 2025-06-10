@@ -1,0 +1,175 @@
+version: '3.8'
+
+services:
+  user-service:
+    build:
+      context: ./user-service
+      dockerfile: Dockerfile
+    ports:
+      - "3001:3001"
+    environment:
+      - PORT=3001
+      - POSTGRES_HOST=postgres-user
+      - POSTGRES_PORT=5432
+      - POSTGRES_USER=user
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=user_db
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - JWT_SECRET=your_jwt_secret_key
+      - KAFKA_BROKERS=kafka:9092
+      - KAFKA_TOPIC=user-events
+    depends_on:
+      - postgres-user
+      - redis
+      - kafka
+    networks:
+      - app-network
+
+  blog-service:
+    build:
+      context: ./blog-service
+      dockerfile: Dockerfile
+    ports:
+      - "3002:3002"
+    environment:
+      - PORT=3002
+      - POSTGRES_HOST=postgres-blog
+      - POSTGRES_PORT=5432
+      - POSTGRES_USER=blog
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=blog_db
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - JWT_SECRET=your_jwt_secret_key
+      - KAFKA_BROKERS=kafka:9092
+      - KAFKA_TOPIC=blog-events
+    depends_on:
+      - postgres-blog
+      - redis
+      - kafka
+    networks:
+      - app-network
+
+  notification-service:
+    build:
+      context: ./notification-service
+      dockerfile: Dockerfile
+    ports:
+      - "3003:3003"
+    environment:
+      - PORT=3003
+      - POSTGRES_HOST=postgres-notification
+      - POSTGRES_PORT=5432
+      - POSTGRES_USER=notification
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=notification_db
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - JWT_SECRET=your_jwt_secret_key
+      - KAFKA_BROKERS=kafka:9092
+      - KAFKA_TOPIC=user-events,blog-events
+    depends_on:
+      - postgres-notification
+      - redis
+      - kafka
+    networks:
+      - app-network
+
+  api-gateway:
+    build:
+      context: ./api-gateway
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      - PORT=3000
+      - USER_SERVICE_URL=http://user-service:3001
+      - BLOG_SERVICE_URL=http://blog-service:3002
+      - NOTIFICATION_SERVICE_URL=http://notification-service:3003
+    depends_on:
+      - user-service
+      - blog-service
+      - notification-service
+    networks:
+      - app-network
+
+  postgres-user:
+    image: postgres:14
+    environment:
+      - POSTGRES_USER=user
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=user_db
+    volumes:
+      - postgres-user-data:/var/lib/postgresql/data
+    ports:
+      - "5433:5432"
+    networks:
+      - app-network
+
+  postgres-blog:
+    image: postgres:14
+    environment:
+      - POSTGRES_USER=blog
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=blog_db
+    volumes:
+      - postgres-blog-data:/var/lib/postgresql/data
+    ports:
+      - "5434:5432"
+    networks:
+      - app-network
+
+  postgres-notification:
+    image: postgres:14
+    environment:
+      - POSTGRES_USER=notification
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=notification_db
+    volumes:
+      - postgres-notification-data:/var/lib/postgresql/data
+    ports:
+      - "5435:5432"
+    networks:
+      - app-network
+
+  redis:
+    image: redis:7
+    ports:
+      - "6379:6379"
+    networks:
+      - app-network
+
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.3.0
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    ports:
+      - "2181:2181"
+    networks:
+      - app-network
+
+  kafka:
+    image: confluentinc/cp-kafka:7.3.0
+    depends_on:
+      - zookeeper
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+    ports:
+      - "9092:9092"
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
+
+volumes:
+  postgres-user-data:
+  postgres-blog-data:
+  postgres-notification-data:
