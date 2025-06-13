@@ -1,6 +1,6 @@
 # node-ts-kafka-microservice
 
-Below is a detailed **description of the system design** for your microservices project, tailored for your YouTube tutorial. This description provides a clear, professional overview of the architecture, components, interactions, and design choices, complementing the professional system design diagram with icons previously provided (using Mermaid syntax). It aligns with the project’s tech stack (Node.js, TypeScript, PostgreSQL, Redis, Kafka, Docker, JWT, etc.) and the event-driven microservices architecture (User, Blog, Notification Services with Kafka). The description is structured to be concise yet comprehensive, making it easy to explain in a video while covering all key aspects of the system design.
+Below is a detailed **description of the system design** for your microservices project, tailored for your YouTube tutorial. This description provides a clear, professional overview of the architecture, components, interactions, and design choices, complementing the professional system design diagram with icons previously provided (using Mermaid syntax). It aligns with the project’s tech stack (Node.js, TypeScript, PostgreSQL, Redis, Kafka, Docker, JWT, etc.) and the event-driven microservices architecture (User, Blog, Notification Services with Kafka). The description is structured to be concise yet comprehensive, making it easy to explain in a video while covering all key aspects of the system design
 
 ### System Design Description
 
